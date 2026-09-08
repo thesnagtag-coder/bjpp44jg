@@ -230,7 +230,21 @@
     body{background:#fff;}
     section.card{box-shadow:none; border:1px solid #ccc;}
   }
-</style>
+
+  .trad-intro{color:var(--ink-soft); font-size:.88rem; margin:0 0 18px; max-width:640px;}
+  .trad-card{border:1px solid var(--line); border-radius:12px; padding:16px 18px; margin-bottom:12px; background:var(--bg-soft);}
+  .trad-card h4{font-family:var(--serif); font-size:1rem; margin:0 0 4px;}
+  .trad-note{font-size:.82rem; color:var(--ink-soft); margin:0 0 8px; line-height:1.5;}
+  .trad-safety{font-size:.83rem; margin:0; line-height:1.55; padding:10px 12px; border-radius:9px; background:var(--bg-panel); border:1px solid var(--line);}
+  .trad-safety b{color:var(--sage-deep);}
+  .trad-custom{border-style:dashed;}
+  .trad-custom .trad-del{float:right; background:none; border:none; color:var(--ink-soft); font-size:.75rem; cursor:pointer; padding:2px 6px;}
+  .trad-custom .trad-del:hover{color:var(--alert);}
+  .trad-add{margin-top:20px; padding-top:18px; border-top:1px solid var(--line);}
+  .trad-add .row2{margin-bottom:10px;}
+  textarea.trad-input{width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg-panel); color:var(--ink); font-family:var(--font); font-size:.85rem; min-height:64px; resize:vertical;}
+
+  </style>
 </head>
 <body>
 <div class="wrap">
@@ -292,6 +306,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-view="safety">Safety plan</button>
       <button class="tab-btn" data-view="checklist">Event checklist</button>
+      <button class="tab-btn" data-view="traditions">Traditions</button>
     </div>
   </div>
 
@@ -391,6 +406,28 @@
     </section>
   </div>
 
+  
+  <div class="view" id="view-traditions">
+    <section class="card" id="traditionsCard">
+      <h3>Typical traditions - and how to make them safe</h3>
+      <p class="trad-intro" id="tradIntro"></p>
+      <div id="tradList"></div>
+      <div class="trad-add">
+        <h4 style="font-family:var(--serif); font-size:.95rem; margin:0 0 10px;">Add your own tradition</h4>
+        <p class="sub" style="margin:0 0 12px;">Not on the list? Add a tradition specific to your gathering, with your own safety note. It's saved locally, just like the rest of your plan.</p>
+        <div class="field">
+          <label>Tradition name</label>
+          <input type="text" id="tradNameInput" placeholder="e.g. Family talent show">
+        </div>
+        <div class="field">
+          <label>Safety note</label>
+          <textarea class="trad-input" id="tradSafetyInput" placeholder="How do you want to keep this one safe?"></textarea>
+        </div>
+        <button class="btn primary" id="tradAddBtn">Add tradition</button>
+      </div>
+    </section>
+  </div>
+
   <footer>
     <div>Event Safety Planner v1.0 &middot; The Snag Tag</div>
     <div>Nothing you enter here leaves your device. There is no account, no tracking, and no data collection. Your plan is saved locally in this browser only.</div>
@@ -444,6 +481,7 @@
       var v = btn.getAttribute('data-view');
       document.getElementById('view-safety').classList.toggle('active', v === 'safety');
       document.getElementById('view-checklist').classList.toggle('active', v === 'checklist');
+      document.getElementById('view-traditions').classList.toggle('active', v === 'traditions');
     });
   });
 
@@ -1132,6 +1170,59 @@
     });
     updatePlanDash(planChecks);
   })();
+
+
+  // ---------- typical traditions ----------
+  var TRAD_ITEMS = [{"name": "Cake cutting & candles", "note": "A lit cake is one of the most universal party moments there is.", "safety": "Keep the flame at least 30cm (12in) from decorations, hair, and sleeves. Blow out and check the wax has stopped smoking before slicing. Never leave a lit cake unattended near young children (NFPA candle safety guidance)."}, {"name": "Toasts & raising a glass", "note": "A round of drinks to mark the moment, alcoholic or not.", "tag": "alcohol", "safety": "Offer a non-alcoholic option alongside every toast. Keep glass drinkware away from the edges of tables where young children reach, and have soft-close or sturdy glassware for a crowded room to reduce breakage risk."}, {"name": "Gift opening", "note": "Unwrapping gifts as a group activity.", "tag": "children", "safety": "Clear wrapping paper, ribbon, and small parts (batteries, packaging clips) away as you go - they're a choking hazard for anything under 3.17cm (1.25in) across for children under 3 (CPSC small-parts guidance)."}, {"name": "Group photos", "note": "Gathering everyone together for the group shot.", "safety": "Avoid posing groups on furniture, railings, walls, or raised ledges that aren't designed to bear that weight. Keep the photo spot away from steps, pool edges, or uneven ground."}, {"name": "Party games & icebreakers", "note": "Structured games to get the group mixing.", "tag": "children", "safety": "Match games to the actual age range attending, not the average - a game safe for a 10-year-old can be a fall or collision risk for a 4-year-old in the same room."}, {"name": "Shared or potluck-style food", "note": "Guests bringing dishes to share rather than one host catering everything.", "tag": "food", "safety": "Ask in advance for a rough ingredient list so you can flag common allergens (nuts, dairy, egg, shellfish, gluten) on a card next to each dish. Keep hot food above 60°C (140°F) and cold food below 4°C (40°F) - most foodborne illness risk builds in the 'danger zone' between those (USDA/FDA food safety guidance)."}, {"name": "A send-off moment", "note": "Confetti, bubbles, sparklers, or a farewell send-off as guests leave.", "tag": "fire", "safety": "If it involves sparklers, keep a bucket of water or sand nearby, supervise every lit sparkler in a child's hand directly, and let them cool in the water bucket before disposal - sparklers burn at up to 1,000°C (1,800°F) (CPSC sparkler safety data)."}];
+  var TRAD_INTRO = "These are the moments that show up at almost every kind of gathering, whatever you're celebrating. Add your own if yours has a tradition we haven't covered.";
+  var TRAD_CUSTOM_KEY = 'esp_traditions_custom';
+  document.getElementById('tradIntro').textContent = TRAD_INTRO;
+
+  function loadCustomTraditions(){
+    try{ return JSON.parse(localStorage.getItem(TRAD_CUSTOM_KEY) || '[]'); }catch(e){ return []; }
+  }
+  function saveCustomTraditions(list){
+    try{ localStorage.setItem(TRAD_CUSTOM_KEY, JSON.stringify(list)); }catch(e){}
+  }
+
+  function renderTraditions(){
+    var wrap = document.getElementById('tradList');
+    var custom = loadCustomTraditions();
+    var html = '';
+    TRAD_ITEMS.forEach(function(t){
+      html += '<div class="trad-card"><h4>'+t.name+'</h4><p class="trad-note">'+t.note+'</p><p class="trad-safety"><b>Keep it safe: </b>'+t.safety+'</p></div>';
+    });
+    custom.forEach(function(t, i){
+      html += '<div class="trad-card trad-custom"><button class="trad-del" data-ci="'+i+'" title="Remove">Remove</button><h4>'+escapeHtml(t.name)+'</h4><p class="trad-safety"><b>Keep it safe: </b>'+escapeHtml(t.safety)+'</p></div>';
+    });
+    wrap.innerHTML = html;
+    wrap.querySelectorAll('.trad-del').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var idx = parseInt(btn.getAttribute('data-ci'), 10);
+        var list = loadCustomTraditions();
+        list.splice(idx, 1);
+        saveCustomTraditions(list);
+        renderTraditions();
+      });
+    });
+  }
+  function escapeHtml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  document.getElementById('tradAddBtn').addEventListener('click', function(){
+    var nameEl = document.getElementById('tradNameInput');
+    var safetyEl = document.getElementById('tradSafetyInput');
+    var name = nameEl.value.trim();
+    var safety = safetyEl.value.trim();
+    if(!name || !safety){ return; }
+    var list = loadCustomTraditions();
+    list.push({name:name, safety:safety});
+    saveCustomTraditions(list);
+    nameEl.value = '';
+    safetyEl.value = '';
+    renderTraditions();
+  });
+  renderTraditions();
 
   // restore previous session
   (function restore(){
